@@ -1,0 +1,17 @@
+{
+    "name": "AsnL",
+    "keywords": "encoding, serial",
+    "description": "Encode/decode data using simple method inspired by ASN.1",
+    "repository":
+    {
+        "type": "git",
+        "url": "https://github.com/BlueMasters/asnl.git"
+    },
+    "authors": {
+        "name": "Jacques Supcik",
+        "e-mail": "jacques@supcik.net",
+        "maintainer": true
+    },
+    "frameworks": "arduino",
+    "platforms": "*"
+}

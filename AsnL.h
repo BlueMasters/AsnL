@@ -34,9 +34,12 @@ public:
     ~AsnL();
     int FixOk();
     void Dump();
-int FromCharArray(unsigned char* buffer, int bufferLen);
-int ToCharArray(unsigned char* buffer, int bufferLen);
-int FromAsnL(AsnL a);
+    int FromCharArray(unsigned char* buffer, int bufferLen);
+    int ToCharArray(unsigned char* buffer, int bufferLen);
+    int FromAsnL(AsnL a);
+    int ReadFromSerial();
+    int WriteToSerial();
+
 
 protected:
     unsigned char* msg;

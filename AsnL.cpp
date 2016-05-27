@@ -70,3 +70,34 @@ int AsnL::FromAsnL(AsnL a) {
     memcpy((void*)msg, (void*)a.msg, msgLen);
     return msgLen;
 }
+
+int AsnL::ReadFromSerial() {
+    int result = 0;
+    while (!Serial.available()) {};
+    unsigned char type = Serial.read();
+    while (!Serial.available()) {};
+    unsigned char len = Serial.read();
+    if (msgCapacity >= len + 2) {
+        msgLen = (int)len + 2;
+        result = msgLen;
+        msg[0] = type;
+        msg[1] = len;
+    } else {
+        result = -1;
+    }
+    for (int i = 0; i < (int)len; i++) {
+        while (!Serial.available()) {};
+        unsigned char b = Serial.read();
+        if (result >= 0) {
+            msg[i+2] = b;
+        }
+    }
+    return result;
+}
+
+int AsnL::WriteToSerial() {
+    for (int i = 0; i < msgLen; i++) {
+        Serial.write(msg[i]);
+    }
+    return 0;
+}

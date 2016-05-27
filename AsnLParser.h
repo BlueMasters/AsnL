@@ -14,35 +14,26 @@
  * limitations under the License.
  *****************************************************************************/
 
-#ifndef ASN_L__H
-#define ASN_L__H
+#ifndef ASN_L_PARSER__H
+#define ASN_L_PARSER__H
 
-// ASN Types
-#define  ASNL_INT           'I'
-#define  ASNL_UINT          'U'
-#define  ASNL_STRING        '"'
-#define  ASNL_STRUCT        '{'
+#include "AsnL.h"
 
-// Tokens
-#define  ASNL_END_STRUCT    '}'
-#define  ASNL_NIL           '0'
-
-class AsnL {
+class AsnLParser : public AsnL {
 
 public:
-    AsnL(int bufferSize);
-    ~AsnL();
-    int FixOk();
-    void Dump();
-int FromCharArray(unsigned char* buffer, int bufferLen);
-int ToCharArray(unsigned char* buffer, int bufferLen);
-int FromAsnL(AsnL a);
+    AsnLParser(int bufferSize) : AsnL(bufferSize) {};
 
-protected:
-    unsigned char* msg;
-    int msgCapacity;
-    int msgLen;
-    int fix;
+    void Init();
+    int Init(char* buffer, int len);
+    int NextToken();
+    int ReadInt(int* value);
+    int ReadString(char* buffer, int len);
+    void Abort();
+
+private:
+    int pos;
+    int valPtr;
 
 };
 

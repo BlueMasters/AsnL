@@ -15,11 +15,11 @@
  *****************************************************************************/
 
 #include "AsnL.h"
-#include <Arduino.h>
 #include <stdlib.h>
-#include <stdio.h>
+#include <Arduino.h>
 
 AsnL::AsnL(int bufferSize) {
+    msgCapacity = bufferSize;
     msg = (unsigned char*) malloc(bufferSize);
     msgLen = 0;
     fix = 0;
@@ -30,138 +30,6 @@ AsnL::~AsnL() {
         free(msg);
     }
 }
-
-//----------------------------------------------------------------------------
-// Writer
-//----------------------------------------------------------------------------
-
-void AsnL::InitWriter() {
-    msgLen = 0;
-    fix = 0;
-}
-
-void AsnL::Int(int len, int value) {
-    msg[msgLen] = ASNL_INT;
-    msg[msgLen+1] = (unsigned char) len;
-    for (int i = 0; i < len; i++) {
-        msg[msgLen + 1 + len - i] = (unsigned char)(value % 256);
-        value = value / 256;
-    }
-    msgLen += len + 2;
-}
-
-void AsnL::Uint(int len, unsigned int value) {
-    msg[msgLen] = ASNL_UINT;
-    msg[msgLen+1] = (unsigned char) len;
-    for (int i = 0; i < len; i++) {
-        msg[msgLen + 1 + len - i] = (unsigned char)(value % 256);
-        value = value / 256;
-    }
-    msgLen += len + 2;
-}
-
-void AsnL::String(char* txt) {
-    msg[msgLen++] = ASNL_STRING;
-    int len = strlen(txt);
-    msg[msgLen++] = (unsigned char) len;
-    for (int i = 0; i < len; i++) {
-        msg[msgLen++] = (unsigned char)(txt[i]);
-    }
-}
-
-void AsnL::Struct() {
-    msg[msgLen++] = ASNL_STRUCT;
-    // Here we use the "length" field to chain the struct tokens.
-    // This will be "fixed" with the EndStruct function.
-    msg[msgLen] = (unsigned char) fix;
-    fix = msgLen++;
-}
-
-void AsnL::EndStruct() {
-    if (fix > 0) {
-        // Fix the "length" field and pop the address of the previous
-        // "struct".
-        int i = (int)msg[fix];
-        msg[fix] = (unsigned int)(msgLen - fix - 1);
-        fix = i;
-    }
-}
-
-void AsnL::CloseWriter() {
-    while (fix > 0) {
-        int i = (int)msg[fix];
-        msg[fix] = (unsigned int)(msgLen - fix - 1);
-        fix = i;
-    }
-}
-
-//----------------------------------------------------------------------------
-// Parser
-//----------------------------------------------------------------------------
-
-void AsnL::InitParser() {
-    pos = 0;
-    fix = 0;
-}
-
-int AsnL::NextToken() {
-    if (fix > 0 && pos > (fix + msg[fix])) {
-        // We reached the end of a structure. So we "pop" the address
-        // of the previous "struct".
-        int i = (int)msg[fix-1];
-        msg[fix-1] = ASNL_STRUCT;
-        fix = i;
-        return ASNL_END_STRUCT;
-    }
-    if (pos >= msgLen) {
-        return ASNL_NIL;
-    }
-
-    int type = (int)msg[pos++];
-    int len = (int)msg[pos++];
-    valPtr = pos;
-    switch(type) {
-    case ASNL_INT:
-        pos += len;
-        break;
-    case ASNL_STRING:
-        pos += len;
-        break;
-    case ASNL_STRUCT:
-        // We use the "type" byte (ASNL_STRUCT) to chain the "structs"
-        msg[pos-2] = (unsigned char)fix;
-        fix = pos-1;
-        break;
-    }
-    return type;
-}
-
-void AsnL::ReadInt(int* value) {
-    int len = msg[valPtr-1];
-    *value = 0;
-    for (int i = 0; i < len; i++) {
-        *value = *value * 256 + msg[valPtr+i];
-    }
-}
-
-void AsnL::ReadString(char* buffer, int len) {
-    if (len > msg[valPtr-1]+1) {
-        memcpy((void*)buffer, (void*)&msg[valPtr], msg[valPtr-1]);
-        buffer[msg[valPtr-1]] = 0;
-    }
-}
-
-void AsnL::AbortParser() {
-    while (fix > 0) {
-        int i = (int)msg[fix-1];
-        msg[fix-1] = ASNL_STRUCT;
-        fix = i;
-    }
-}
-
-//----------------------------------------------------------------------------
-// Util
-//----------------------------------------------------------------------------
 
 int AsnL::FixOk() {
     return fix == 0;
@@ -181,4 +49,24 @@ void AsnL::Dump() {
         }
     }
     Serial.println();
+}
+
+int AsnL::FromCharArray(unsigned char* buffer, int bufferLen) {
+    if (msgCapacity < bufferLen) return -1;
+    msgLen = bufferLen;
+    memcpy((void*)msg, (void*)buffer, msgLen);
+    return msgLen;
+}
+
+int AsnL::ToCharArray(unsigned char* buffer, int bufferLen) {
+    if (bufferLen < msgLen) return -1;
+    memcpy((void*)buffer, (void*)msg, msgLen);
+    return msgLen;
+}
+
+int AsnL::FromAsnL(AsnL a) {
+    if (msgCapacity < a.msgLen) return -1;
+    msgLen = a.msgLen;
+    memcpy((void*)msg, (void*)a.msg, msgLen);
+    return msgLen;
 }

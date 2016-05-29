@@ -14,28 +14,23 @@
  * limitations under the License.
  *****************************************************************************/
 
-#include "AsnL.h"
+#include "AsnLMsg.h"
 #include <stdlib.h>
 #include <Arduino.h>
 
-AsnL::AsnL(int bufferSize) {
+AsnLMsg::AsnLMsg(int bufferSize) {
     msgCapacity = bufferSize;
     msg = (unsigned char*) malloc(bufferSize);
     msgLen = 0;
-    fix = 0;
 }
 
-AsnL::~AsnL() {
+AsnLMsg::~AsnLMsg() {
     if (msg != 0) {
         free(msg);
     }
 }
 
-int AsnL::FixOk() {
-    return fix == 0;
-}
-
-void AsnL::Dump() {
+void AsnLMsg::dump() {
     for (int i = 0; i < msgLen; i++) {
         int x = msg[i];
         int xh = (x / 16) % 16;
@@ -51,27 +46,20 @@ void AsnL::Dump() {
     Serial.println();
 }
 
-int AsnL::FromCharArray(unsigned char* buffer, int bufferLen) {
+int AsnLMsg::fromCharArray(unsigned char* buffer, int bufferLen) {
     if (msgCapacity < bufferLen) return -1;
     msgLen = bufferLen;
     memcpy((void*)msg, (void*)buffer, msgLen);
     return msgLen;
 }
 
-int AsnL::ToCharArray(unsigned char* buffer, int bufferLen) {
+int AsnLMsg::toCharArray(unsigned char* buffer, int bufferLen) {
     if (bufferLen < msgLen) return -1;
     memcpy((void*)buffer, (void*)msg, msgLen);
     return msgLen;
 }
 
-int AsnL::FromAsnL(AsnL a) {
-    if (msgCapacity < a.msgLen) return -1;
-    msgLen = a.msgLen;
-    memcpy((void*)msg, (void*)a.msg, msgLen);
-    return msgLen;
-}
-
-int AsnL::ReadFromSerial() {
+int AsnLMsg::readFromSerial() {
     int result = 0;
     while (!Serial.available()) {};
     unsigned char type = Serial.read();
@@ -95,7 +83,7 @@ int AsnL::ReadFromSerial() {
     return result;
 }
 
-int AsnL::WriteToSerial() {
+int AsnLMsg::writeToSerial() {
     for (int i = 0; i < msgLen; i++) {
         Serial.write(msg[i]);
     }

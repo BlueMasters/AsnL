@@ -17,23 +17,27 @@
 #ifndef ASN_L_PARSER__H
 #define ASN_L_PARSER__H
 
-#include "AsnL.h"
+#include "AsnLMsg.h"
+#include <Arduino.h>
 
-class AsnLParser : public AsnL {
+class AsnLParser  {
 
 public:
-    AsnLParser(int bufferSize) : AsnL(bufferSize) {};
+    AsnLParser(AsnLMsg &aMsg) : _aMsg(aMsg) {};
 
-    void Init();
-    int Init(char* buffer, int len);
-    int NextToken();
-    int ReadInt(int* value);
-    int ReadString(char* buffer, int len);
-    void Abort();
+    void init();
+    int nextToken();
+    int readInt(int* value);
+    int readUInt(unsigned* value);
+    int readString(char* buffer, int len);
+    void close();
+    int fixOk();
 
 private:
-    int pos;
-    int valPtr;
+    AsnLMsg &_aMsg;
+    int _pos;
+    int _valPtr;
+    int _fix;
 
 };
 

@@ -14,8 +14,8 @@
  * limitations under the License.
  *****************************************************************************/
 
-#ifndef ASN_L__H
-#define ASN_L__H
+#ifndef ASNL_MSG__H
+#define ASNL_MSG__H
 
 // ASN Types
 #define  ASNL_INT           'I'
@@ -27,25 +27,20 @@
 #define  ASNL_END_STRUCT    '}'
 #define  ASNL_NIL           '0'
 
-class AsnL {
+class AsnLMsg {
 
 public:
-    AsnL(int bufferSize);
-    ~AsnL();
-    int FixOk();
-    void Dump();
-    int FromCharArray(unsigned char* buffer, int bufferLen);
-    int ToCharArray(unsigned char* buffer, int bufferLen);
-    int FromAsnL(AsnL a);
-    int ReadFromSerial();
-    int WriteToSerial();
+    AsnLMsg(int bufferSize);
+    ~AsnLMsg();
+    void dump();
+    int fromCharArray(unsigned char* buffer, int bufferLen);
+    int toCharArray(unsigned char* buffer, int bufferLen);
+    int readFromSerial();
+    int writeToSerial();
 
-
-protected:
     unsigned char* msg;
     int msgCapacity;
     int msgLen;
-    int fix;
 
 };
 

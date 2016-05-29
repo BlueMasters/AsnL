@@ -15,80 +15,85 @@
  *****************************************************************************/
 
 #include "AsnLWriter.h"
+#include "AsnLMsg.h"
 #include <Arduino.h>
 #include <stdlib.h>
 #include <stdio.h>
 
-void AsnLWriter::Init() {
-    msgLen = 0;
-    fix = 0;
+void AsnLWriter::init() {
+    _aMsg.msgLen = 0;
+    _fix = 0;
 }
 
-int AsnLWriter::Int(int len, int value) {
-    if (msgLen + 2 + len > msgCapacity) return -1;
-    msg[msgLen] = ASNL_INT;
-    msg[msgLen+1] = (unsigned char) len;
+int AsnLWriter::integer(int len, int value) {
+    if (_aMsg.msgLen + 2 + len > _aMsg.msgCapacity) return -1;
+    _aMsg.msg[_aMsg.msgLen] = ASNL_INT;
+    _aMsg.msg[_aMsg.msgLen+1] = (unsigned char) len;
     // write value in BigEndian (MSB first)
     uint32_t v = uint32_t(value);
     for (int i = 0; i < len; i++) {
-        msg[msgLen + 1 + len - i] = (unsigned char)(v % 256);
+        _aMsg.msg[_aMsg.msgLen + 1 + len - i] = (unsigned char)(v % 256);
         v = v / 256;
     }
-    msgLen += len + 2;
-    return msgLen;
+    _aMsg.msgLen += len + 2;
+    return _aMsg.msgLen;
 }
 
-int AsnLWriter::Uint(int len, unsigned int value) {
-    if (msgLen + 2 + len > msgCapacity) return -1;
-    msg[msgLen] = ASNL_UINT;
-    msg[msgLen+1] = (unsigned char) len;
+int AsnLWriter::uinteger(int len, unsigned int value) {
+    if (_aMsg.msgLen + 2 + len > _aMsg.msgCapacity) return -1;
+    _aMsg.msg[_aMsg.msgLen] = ASNL_UINT;
+    _aMsg.msg[_aMsg.msgLen+1] = (unsigned char) len;
     for (int i = 0; i < len; i++) {
-        msg[msgLen + 1 + len - i] = (unsigned char)(value % 256);
+        _aMsg.msg[_aMsg.msgLen + 1 + len - i] = (unsigned char)(value % 256);
         value = value / 256;
     }
-    msgLen += len + 2;
-    return msgLen;
+    _aMsg.msgLen += len + 2;
+    return _aMsg.msgLen;
 }
 
-int AsnLWriter::Str(String txt) {
+int AsnLWriter::string(String txt) {
     int len = txt.length();
-    if (msgLen + 2 + len > msgCapacity) return -1;
-    msg[msgLen++] = ASNL_STRING;
-    msg[msgLen++] = (unsigned char) len;
+    if (_aMsg.msgLen + 2 + len > _aMsg.msgCapacity) return -1;
+    _aMsg.msg[_aMsg.msgLen++] = ASNL_STRING;
+    _aMsg.msg[_aMsg.msgLen++] = (unsigned char) len;
     for (int i = 0; i < len; i++) {
-        msg[msgLen++] = (unsigned char)(txt.charAt(i));
+        _aMsg.msg[_aMsg.msgLen++] = (unsigned char)(txt.charAt(i));
     }
-    return msgLen;
+    return _aMsg.msgLen;
 }
 
-int AsnLWriter::Struct() {
-    if (msgLen + 2 > msgCapacity) return -1;
-    msg[msgLen++] = ASNL_STRUCT;
+int AsnLWriter::structure() {
+    if (_aMsg.msgLen + 2 > _aMsg.msgCapacity) return -1;
+    _aMsg.msg[_aMsg.msgLen++] = ASNL_STRUCT;
     // Here we use the "length" field to chain the struct tokens.
     // This will be "fixed" with the EndStruct function.
-    msg[msgLen] = (unsigned char) fix;
-    fix = msgLen++;
-    return msgLen;
+    _aMsg.msg[_aMsg.msgLen] = (unsigned char) _fix;
+    _fix = _aMsg.msgLen++;
+    return _aMsg.msgLen;
 }
 
-int AsnLWriter::EndStruct() {
-    if (fix > 0) {
+int AsnLWriter::endStructure() {
+    if (_fix > 0) {
         // Fix the "length" field and pop the address of the previous
         // "struct".
-        int i = (int)msg[fix];
-        msg[fix] = (unsigned int)(msgLen - fix - 1);
-        fix = i;
+        int i = (int)_aMsg.msg[_fix];
+        _aMsg.msg[_fix] = (unsigned int)(_aMsg.msgLen - _fix - 1);
+        _fix = i;
         return 0;
     } else {
         return -1;
     }
 }
 
-int AsnLWriter::Close() {
-    while (fix > 0) {
-        int i = (int)msg[fix];
-        msg[fix] = (unsigned int)(msgLen - fix - 1);
-        fix = i;
+int AsnLWriter::close() {
+    while (_fix > 0) {
+        int i = (int)_aMsg.msg[_fix];
+        _aMsg.msg[_fix] = (unsigned int)(_aMsg.msgLen - _fix - 1);
+        _fix = i;
     }
     return 0;
+}
+
+int AsnLWriter::fixOk() {
+    return _fix == 0;
 }

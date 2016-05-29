@@ -15,77 +15,93 @@
  *****************************************************************************/
 
 #include "AsnLParser.h"
+#include "AsnLMsg.h"
 #include <Arduino.h>
 #include <stdlib.h>
 #include <stdio.h>
 
-void AsnLParser::Init() {
-    pos = 0;
-    fix = 0;
+void AsnLParser::init() {
+    _pos = 0;
+    _fix = 0;
 }
 
-int AsnLParser::NextToken() {
-    if (fix > 0 && pos > (fix + msg[fix])) {
+int AsnLParser::nextToken() {
+    if (_fix > 0 && _pos > (_fix + _aMsg.msg[_fix])) {
         // We reached the end of a structure. So we "pop" the address
         // of the previous "struct".
-        int i = (int)msg[fix-1];
-        msg[fix-1] = ASNL_STRUCT;
-        fix = i;
+        int i = (int)_aMsg.msg[_fix-1];
+        _aMsg.msg[_fix-1] = ASNL_STRUCT;
+        _fix = i;
         return ASNL_END_STRUCT;
     }
-    if (pos >= msgLen) {
+    if (_pos >= _aMsg.msgLen) {
         return ASNL_NIL;
     }
 
-    int type = (int)msg[pos++];
-    int len = (int)msg[pos++];
-    valPtr = pos;
+    int type = (int)_aMsg.msg[_pos++];
+    int len = (int)_aMsg.msg[_pos++];
+    _valPtr = _pos;
     switch(type) {
     case ASNL_INT:
-        pos += len;
-        break;
+    case ASNL_UINT:
     case ASNL_STRING:
-        pos += len;
+        _pos += len;
         break;
     case ASNL_STRUCT:
         // We use the "type" byte (ASNL_STRUCT) to chain the "structs"
-        msg[pos-2] = (unsigned char)fix;
-        fix = pos-1;
+        _aMsg.msg[_pos-2] = (unsigned char)_fix;
+        _fix = _pos-1;
         break;
     }
     return type;
 }
 
-int AsnLParser::ReadInt(int* value) {
-    if (valPtr <= 0 || valPtr >= msgCapacity) return -1;
-    int len = msg[valPtr-1];
-    if (valPtr + len > msgCapacity) return -1;
+int AsnLParser::readInt(int* value) {
+    if (_valPtr <= 0 || _valPtr >= _aMsg.msgCapacity) return -1;
+    int len = _aMsg.msg[_valPtr-1];
+    if (_valPtr + len > _aMsg.msgCapacity) return -1;
     uint32_t v = 0;
     for (int i = 0; i < len; i++) {
-        v = v * 256 + msg[valPtr+i];
+        v = v * 256 + _aMsg.msg[_valPtr+i];
     }
     *value = (int)v;
     return 0;
 }
 
-int AsnLParser::ReadString(char* buffer, int bufferLen) {
-    if (valPtr <= 0 || valPtr >= msgCapacity) return -1;
-    int len = msg[valPtr-1];
-    if (valPtr + len > msgCapacity) {
+int AsnLParser::readUInt(unsigned* value) {
+    if (_valPtr <= 0 || _valPtr >= _aMsg.msgCapacity) return -1;
+    int len = _aMsg.msg[_valPtr-1];
+    if (_valPtr + len > _aMsg.msgCapacity) return -1;
+    uint32_t v = 0;
+    for (int i = 0; i < len; i++) {
+        v = v * 256 + _aMsg.msg[_valPtr+i];
+    }
+    *value = (int)v;
+    return 0;
+}
+
+int AsnLParser::readString(char* buffer, int bufferLen) {
+    if (_valPtr <= 0 || _valPtr >= _aMsg.msgCapacity) return -1;
+    int len = _aMsg.msg[_valPtr-1];
+    if (_valPtr + len > _aMsg.msgCapacity) {
         return -1;
     }
     if (bufferLen < len+1) {
         return -1;
     }
-    memcpy((void*)buffer, (void*)&msg[valPtr], len);
+    memcpy((void*)buffer, (void*)&_aMsg.msg[_valPtr], len);
     buffer[len] = 0;
     return len;
 }
 
-void AsnLParser::Abort() {
-    while (fix > 0) {
-        int i = (int)msg[fix-1];
-        msg[fix-1] = ASNL_STRUCT;
-        fix = i;
+void AsnLParser::close() {
+    while (_fix > 0) {
+        int i = (int)_aMsg.msg[_fix-1];
+        _aMsg.msg[_fix-1] = ASNL_STRUCT;
+        _fix = i;
     }
+}
+
+int AsnLParser::fixOk() {
+    return _fix == 0;
 }

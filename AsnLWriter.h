@@ -17,21 +17,25 @@
 #ifndef ASN_L_WRITER__H
 #define ASN_L_WRITER__H
 
-#include "AsnL.h"
+#include "AsnLMsg.h"
 #include <Arduino.h>
 
-class AsnLWriter : public AsnL {
+class AsnLWriter {
 
 public:
-    AsnLWriter(int bufferSize) : AsnL(bufferSize) {};
+    AsnLWriter(AsnLMsg &aMsg) : _aMsg(aMsg) {};
+    void init();
+    int integer(int len, int value);
+    int uinteger(int len, unsigned int value);
+    int string(String txt);
+    int structure();
+    int endStructure();
+    int close();
+    int fixOk();
 
-    void Init();
-    int Int(int len, int value);
-    int Uint(int len, unsigned int value);
-    int Str(String txt);
-    int Struct();
-    int EndStruct();
-    int Close();
+private:
+    AsnLMsg &_aMsg;
+    int _fix;
 
 };
 

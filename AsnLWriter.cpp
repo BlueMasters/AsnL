@@ -97,3 +97,7 @@ int AsnLWriter::close() {
 int AsnLWriter::fixOk() {
     return _fix == 0;
 }
+
+AsnLMsg& AsnLWriter::msg() {
+    return _aMsg;
+}

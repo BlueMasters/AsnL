@@ -32,6 +32,7 @@ public:
     int endStructure();
     int close();
     int fixOk();
+    AsnLMsg& msg();
 
 private:
     AsnLMsg &_aMsg;

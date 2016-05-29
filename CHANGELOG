@@ -1,4 +1,8 @@
 2016-05-29  Jacques Supcik  <jacques@supcik.net>
 
+    * VERSION 0.2.0
+
     * Complete refactor of the library. AnsL is renamed to AsnLMsg and
     AsnLWriter and AsnLParser take a message as parameter.
+
+    * Add the AsnLWriter.msg() method to access the message of a writer

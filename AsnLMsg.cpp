@@ -15,8 +15,9 @@
  *****************************************************************************/
 
 #include "AsnLMsg.h"
-#include <stdlib.h>
 #include <Arduino.h>
+#include <stdlib.h>
+#include <SoftwareSerial.h>
 
 AsnLMsg::AsnLMsg(int bufferSize) {
     msgCapacity = bufferSize;
@@ -44,6 +45,22 @@ void AsnLMsg::dump() {
         }
     }
     Serial.println();
+}
+
+void AsnLMsg::dump(SoftwareSerial s) {
+    for (int i = 0; i < msgLen; i++) {
+        int x = msg[i];
+        int xh = (x / 16) % 16;
+        int xl = x % 16;
+        s.print("0x");
+        s.print((char)(xh < 10 ? ('0' + xh) : ('a' - 10 + xh)));
+        s.print((char)(xl < 10 ? ('0' + xl) : ('a' - 10 + xl)));
+        s.print(' ');
+        if (i % 8 == 7) {
+            s.println();
+        }
+    }
+    s.println();
 }
 
 int AsnLMsg::fromCharArray(unsigned char* buffer, int bufferLen) {

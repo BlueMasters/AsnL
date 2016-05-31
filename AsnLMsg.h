@@ -17,6 +17,9 @@
 #ifndef ASNL_MSG__H
 #define ASNL_MSG__H
 
+#include <Arduino.h>
+#include <SoftwareSerial.h>
+
 // ASN Types
 #define  ASNL_INT           'I'
 #define  ASNL_UINT          'U'
@@ -33,6 +36,7 @@ public:
     AsnLMsg(int bufferSize);
     ~AsnLMsg();
     void dump();
+    void dump(SoftwareSerial s);
     int fromCharArray(unsigned char* buffer, int bufferLen);
     int toCharArray(unsigned char* buffer, int bufferLen);
     int readFromSerial();

@@ -13,5 +13,5 @@
         "maintainer": true
     },
     "frameworks": "arduino",
-    "platforms": "*"
+    "platforms": "atmelavr"
 }

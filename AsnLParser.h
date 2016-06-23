@@ -27,8 +27,12 @@ public:
 
     void init();
     int nextToken();
-    int readInt(int* value);
-    int readUInt(unsigned* value);
+    int readInt(int8_t* value);
+    int readInt(int16_t* value);
+    int readInt(int32_t* value);
+    int readUInt(uint8_t* value);
+    int readUInt(uint16_t* value);
+    int readUInt(uint32_t* value);
     int readString(char* buffer, int len);
     void close();
     int fixOk();

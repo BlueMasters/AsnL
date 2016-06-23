@@ -56,27 +56,75 @@ int AsnLParser::nextToken() {
     return type;
 }
 
-int AsnLParser::readInt(int* value) {
+int AsnLParser::readInt(int32_t* value) {
     if (_valPtr <= 0 || _valPtr >= _aMsg.msgCapacity) return -1;
     int len = _aMsg.msg[_valPtr-1];
+    if (len > 4) return -1;
     if (_valPtr + len > _aMsg.msgCapacity) return -1;
-    uint32_t v = 0;
+    *value = 0;
     for (int i = 0; i < len; i++) {
-        v = v * 256 + _aMsg.msg[_valPtr+i];
+        *value = *value * 256 + _aMsg.msg[_valPtr+i];
     }
-    *value = (int)v;
     return 0;
 }
 
-int AsnLParser::readUInt(unsigned* value) {
+int AsnLParser::readInt(int16_t* value) {
     if (_valPtr <= 0 || _valPtr >= _aMsg.msgCapacity) return -1;
     int len = _aMsg.msg[_valPtr-1];
+    if (len > 2) return -1;
     if (_valPtr + len > _aMsg.msgCapacity) return -1;
-    uint32_t v = 0;
+    *value = 0;
     for (int i = 0; i < len; i++) {
-        v = v * 256 + _aMsg.msg[_valPtr+i];
+        *value = *value * 256 + _aMsg.msg[_valPtr+i];
     }
-    *value = (int)v;
+    return 0;
+}
+
+int AsnLParser::readInt(int8_t* value) {
+    if (_valPtr <= 0 || _valPtr >= _aMsg.msgCapacity) return -1;
+    int len = _aMsg.msg[_valPtr-1];
+    if (len > 1) return -1;
+    if (_valPtr + len > _aMsg.msgCapacity) return -1;
+    *value = 0;
+    for (int i = 0; i < len; i++) {
+        *value = *value * 256 + _aMsg.msg[_valPtr+i];
+    }
+    return 0;
+}
+
+int AsnLParser::readUInt(uint32_t* value) {
+    if (_valPtr <= 0 || _valPtr >= _aMsg.msgCapacity) return -1;
+    int len = _aMsg.msg[_valPtr-1];
+    if (len > 4) return -1;
+    if (_valPtr + len > _aMsg.msgCapacity) return -1;
+    *value = 0;
+    for (int i = 0; i < len; i++) {
+        *value = *value * 256 + _aMsg.msg[_valPtr+i];
+    }
+    return 0;
+}
+
+int AsnLParser::readUInt(uint16_t* value) {
+    if (_valPtr <= 0 || _valPtr >= _aMsg.msgCapacity) return -1;
+    int len = _aMsg.msg[_valPtr-1];
+    if (len > 2) return -1;
+    if (_valPtr + len > _aMsg.msgCapacity) return -1;
+    *value = 0;
+    for (int i = 0; i < len; i++) {
+        *value = *value * 256 + _aMsg.msg[_valPtr+i];
+    }
+    return 0;
+}
+
+int AsnLParser::readUInt(uint8_t* value) {
+    if (_valPtr <= 0 || _valPtr >= _aMsg.msgCapacity) return -1;
+    int len = _aMsg.msg[_valPtr-1];
+    if (len > 1) return -1;
+    if (_valPtr + len > _aMsg.msgCapacity) return -1;
+    *value = 0;
+    for (int i = 0; i < len; i++) {
+        *value = *value * 256 + _aMsg.msg[_valPtr+i];
+    }
     return 0;
 }
 

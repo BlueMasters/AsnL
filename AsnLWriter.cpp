@@ -25,7 +25,7 @@ void AsnLWriter::init() {
     _fix = 0;
 }
 
-int AsnLWriter::integer(int len, int value) {
+int AsnLWriter::integer(int len, int32_t value) {
     if (_aMsg.msgLen + 2 + len > _aMsg.msgCapacity) return -1;
     _aMsg.msg[_aMsg.msgLen] = ASNL_INT;
     _aMsg.msg[_aMsg.msgLen+1] = (unsigned char) len;
@@ -39,7 +39,7 @@ int AsnLWriter::integer(int len, int value) {
     return _aMsg.msgLen;
 }
 
-int AsnLWriter::uinteger(int len, unsigned int value) {
+int AsnLWriter::uinteger(int len, uint32_t value) {
     if (_aMsg.msgLen + 2 + len > _aMsg.msgCapacity) return -1;
     _aMsg.msg[_aMsg.msgLen] = ASNL_UINT;
     _aMsg.msg[_aMsg.msgLen+1] = (unsigned char) len;

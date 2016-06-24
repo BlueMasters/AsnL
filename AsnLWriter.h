@@ -25,8 +25,8 @@ class AsnLWriter {
 public:
     AsnLWriter(AsnLMsg &aMsg) : _aMsg(aMsg) {};
     void init();
-    int integer(int len, int value);
-    int uinteger(int len, unsigned int value);
+    int integer(int len, int32_t value);
+    int uinteger(int len, uint32_t value);
     int string(String txt);
     int structure();
     int endStructure();
